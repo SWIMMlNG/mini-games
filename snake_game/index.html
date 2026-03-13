@@ -109,6 +109,18 @@
             box-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
         }
 
+        .btn-back {
+            background: linear-gradient(45deg, #666, #999);
+            color: #fff;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
         .instructions {
             margin-top: 20px;
             padding: 15px;
@@ -230,6 +242,7 @@
         <div class="controls">
             <button class="btn btn-start" id="startBtn" onclick="startGame()">开始游戏</button>
             <button class="btn btn-pause" id="pauseBtn" onclick="togglePause()" style="display: none;">暂停</button>
+            <a href="../index.html" class="btn btn-back">← 返回大厅</a>
         </div>
 
         <div class="mobile-controls">
@@ -255,6 +268,7 @@
         <h2>游戏结束!</h2>
         <div class="final-score">最终得分: <span id="finalScore">0</span></div>
         <button class="btn btn-start" onclick="startGame()">重新开始</button>
+        <a href="../index.html" class="btn btn-back" style="margin-top: 15px;">← 返回大厅</a>
     </div>
 
     <script>
