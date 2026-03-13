@@ -498,7 +498,7 @@
             if (keys['ArrowUp'] || keys['w']) playerY -= speed;
             if (keys['ArrowDown'] || keys['s']) playerY += speed;
             if (keys['ArrowLeft'] || keys['a']) playerX -= speed;
-            if (keys['ArrowRight'] || keys['d']) playerY += speed;
+            if (keys['ArrowRight'] || keys['d']) playerX += speed;
 
             // 边界限制
             playerX = Math.max(0, Math.min(2000, playerX));
