@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 小游戏合集 - Mini Games Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px 0;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+
+        .game-preview {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.1));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .game-card:hover .game-preview::before {
+            transform: translateX(100%);
+        }
+
+        .game-info {
+            padding: 25px;
+        }
+
+        .game-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .game-desc {
+            color: #888;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .game-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        .tag.html5 {
+            background: rgba(227, 76, 38, 0.2);
+            color: #e34c26;
+        }
+
+        .tag.python {
+            background: rgba(55, 118, 171, 0.2);
+            color: #3776ab;
+        }
+
+        .play-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #1a1a2e;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .game-card:hover .play-btn {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        footer a {
+            color: #00ff88;
+            text-decoration: none;
+        }
+
+        .coming-soon {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .coming-soon:hover {
+            transform: none;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .games-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 小游戏合集</h1>
+            <p class="subtitle">Mini Games Collection by SWIMMlNG</p>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="gameCount">1</div>
+                    <div class="stat-label">游戏数量</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">快乐时光</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="games-grid">
+            <!-- 贪吃蛇游戏 -->
+            <a href="snake_game/index.html" class="game-card">
+                <div class="game-preview">🐍</div>
+                <div class="game-info">
+                    <h2 class="game-title">贪吃蛇</h2>
+                    <p class="game-desc">经典的贪吃蛇游戏，支持网页版和Python桌面版。精美的视觉效果，流畅的操作体验！</p>
+                    <div class="game-tags">
+                        <span class="tag html5">HTML5</span>
+                        <span class="tag python">Python</span>
+                        <span class="tag">经典</span>
+                    </div>
+                    <span class="play-btn">开始游戏 →</span>
+                </div>
+            </a>
+
+            <!-- 占位：更多游戏即将推出 -->
+            <div class="game-card coming-soon">
+                <div class="game-preview">🎲</div>
+                <div class="game-info">
+                    <h2 class="game-title">更多游戏</h2>
+                    <p class="game-desc">更多精彩小游戏正在开发中，敬请期待...</p>
+                    <div class="game-tags">
+                        <span class="tag">Coming Soon</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-card coming-soon">
+                <div class="game-preview">🎯</div>
+                <div class="game-info">
+                    <h2 class="game-title">敬请期待</h2>
+                    <p class="game-desc">下一个游戏会是什么呢？</p>
+                    <div class="game-tags">
+                        <span class="tag">Coming Soon</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ by <a href="https://github.com/SWIMMlNG" target="_blank">SWIMMlNG</a> & 丛雨酱 🔪🌸</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                <a href="https://github.com/SWIMMlNG/mini-games" target="_blank">View on GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // 动态统计游戏数量
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameCards = document.querySelectorAll('.game-card:not(.coming-soon)');
+            document.getElementById('gameCount').textContent = gameCards.length;
+        });
+    </script>
+</body>
+</html>
