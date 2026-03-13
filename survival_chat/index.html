@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌲 生存聊天室 - Survival Chat</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 游戏区域 */
+        .game-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-header {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .game-title {
+            font-size: 1.5em;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .player-info {
+            display: flex;
+            gap: 20px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.7em;
+            color: #888;
+        }
+
+        .info-value {
+            font-size: 1.2em;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        #gameCanvas {
+            flex: 1;
+            background: #1a3d1a;
+            cursor: crosshair;
+        }
+
+        /* 聊天区域 */
+        .chat-area {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.7);
+            border-left: 2px solid rgba(0, 255, 136, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .chat-header h3 {
+            color: #00ff88;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .online-count {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 12px;
+            border-radius: 12px;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        .message.own {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #1a1a2e;
+            align-self: flex-end;
+        }
+
+        .message.other {
+            background: rgba(255, 255, 255, 0.1);
+            align-self: flex-start;
+        }
+
+        .message-system {
+            text-align: center;
+            color: #888;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        .message-author {
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #00ccff;
+        }
+
+        .message-time {
+            font-size: 0.7em;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 255, 136, 0.3);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.95em;
+        }
+
+        .chat-input::placeholder {
+            color: #666;
+        }
+
+        .chat-input:focus {
+            outline: 2px solid rgba(0, 255, 136, 0.5);
+        }
+
+        .btn-send {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-send:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+
+        /* 登录界面 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-box p {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #1a1a2e;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #888;
+            text-decoration: none;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        /* 资源提示 */
+        .resource-popup {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            pointer-events: none;
+            animation: fadeUp 1s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-30px); }
+        }
+
+        @media (max-width: 900px) {
+            .chat-area {
+                width: 300px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .game-container {
+                flex-direction: column;
+            }
+            .chat-area {
+                width: 100%;
+                height: 300px;
+                border-left: none;
+                border-top: 2px solid rgba(0, 255, 136, 0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🌲 生存聊天室</h2>
+            <p>输入你的名字，加入生存挑战！</p>
+            <input type="text" class="name-input" id="playerNameInput" placeholder="你的名字" maxlength="12">
+            <button class="btn-login" onclick="login()">进入游戏</button>
+            <br>
+            <a href="../index.html" class="btn-back">← 返回大厅</a>
+        </div>
+    </div>
+
+    <!-- 游戏主界面 -->
+    <div class="game-container" id="gameContainer" style="display: none;">
+        <div class="game-area">
+            <div class="game-header">
+                <div class="game-title">🌲 生存聊天室</div>
+                <div class="player-info">
+                    <div class="info-item">
+                        <div class="info-label">玩家</div>
+                        <div class="info-value" id="playerDisplayName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">资源</div>
+                        <div class="info-value" id="resourceCount">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">在线</div>
+                        <div class="info-value" id="onlinePlayers">0</div>
+                    </div>
+                </div>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3>💬 聊天室</h3>
+                <div class="online-count">在线玩家: <span id="chatOnlineCount">0</span>人</div>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="输入消息..." maxlength="100">
+                <button class="btn-send" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase 配置 - 使用公共测试数据库
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummyKeyForTesting123456789",
+            authDomain: "mini-games-chat-demo.firebaseapp.com",
+            databaseURL: "https://mini-games-chat-demo-default-rtdb.firebaseio.com",
+            projectId: "mini-games-chat-demo",
+            storageBucket: "mini-games-chat-demo.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // 游戏状态
+        let playerName = '';
+        let playerId = '';
+        let playerX = 0;
+        let playerY = 0;
+        let resources = 0;
+        let players = {};
+        let trees = [];
+        let messages = [];
+
+        // Canvas 设置
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let animationId;
+
+        // 调整 Canvas 大小
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // 登录
+        function login() {
+            const nameInput = document.getElementById('playerNameInput');
+            playerName = nameInput.value.trim();
+            
+            if (!playerName) {
+                alert('请输入名字！');
+                return;
+            }
+
+            playerId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+            
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            document.getElementById('playerDisplayName').textContent = playerName;
+            
+            resizeCanvas();
+            initGame();
+        }
+
+        // 初始化游戏
+        function initGame() {
+            // 随机初始位置
+            playerX = Math.random() * canvas.width;
+            playerY = Math.random() * canvas.height;
+
+            // 生成树木资源
+            generateTrees();
+
+            // 监听玩家数据
+            const playerRef = database.ref('players/' + playerId);
+            playerRef.set({
+                name: playerName,
+                x: playerX,
+                y: playerY,
+                resources: 0,
+                lastActive: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // 定期更新玩家位置
+            setInterval(() => {
+                playerRef.update({
+                    x: playerX,
+                    y: playerY,
+                    resources: resources,
+                    lastActive: firebase.database.ServerValue.TIMESTAMP
+                });
+            }, 1000);
+
+            // 监听其他玩家
+            database.ref('players').on('value', (snapshot) => {
+                players = snapshot.val() || {};
+                delete players[playerId]; // 不显示自己
+                document.getElementById('onlinePlayers').textContent = Object.keys(players).length + 1;
+                document.getElementById('chatOnlineCount').textContent = Object.keys(players).length + 1;
+            });
+
+            // 监听聊天消息
+            database.ref('messages').limitToLast(50).on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                displayMessage(msg);
+            });
+
+            // 开始游戏循环
+            gameLoop();
+
+            // 清理离线玩家
+            setInterval(cleanupOfflinePlayers, 10000);
+        }
+
+        // 生成树木
+        function generateTrees() {
+            trees = [];
+            for (let i = 0; i < 30; i++) {
+                trees.push({
+                    x: Math.random() * 2000,
+                    y: Math.random() * 2000,
+                    size: 20 + Math.random() * 20,
+                    color: `hsl(${100 + Math.random() * 40}, 60%, ${30 + Math.random() * 20}%)`
+                });
+            }
+        }
+
+        // 游戏循环
+        function gameLoop() {
+            update();
+            draw();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // 更新游戏状态
+        function update() {
+            // 键盘移动
+            const speed = 3;
+            if (keys['ArrowUp'] || keys['w']) playerY -= speed;
+            if (keys['ArrowDown'] || keys['s']) playerY += speed;
+            if (keys['ArrowLeft'] || keys['a']) playerX -= speed;
+            if (keys['ArrowRight'] || keys['d']) playerY += speed;
+
+            // 边界限制
+            playerX = Math.max(0, Math.min(2000, playerX));
+            playerY = Math.max(0, Math.min(2000, playerY));
+
+            // 检查资源收集
+            trees = trees.filter(tree => {
+                const dx = playerX - tree.x;
+                const dy = playerY - tree.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < 30) {
+                    resources++;
+                    document.getElementById('resourceCount').textContent = resources;
+                    showResourcePopup(tree.x, tree.y, '+1 木材');
+                    return false;
+                }
+                return true;
+            });
+
+            // 资源不足时重新生成
+            if (trees.length < 10) {
+                generateTrees();
+            }
+        }
+
+        // 显示资源提示
+        function showResourcePopup(x, y, text) {
+            const popup = document.createElement('div');
+            popup.className = 'resource-popup';
+            popup.textContent = text;
+            popup.style.left = (canvas.getBoundingClientRect().left + x) + 'px';
+            popup.style.top = (canvas.getBoundingClientRect().top + y) + 'px';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        // 绘制游戏
+        function draw() {
+            // 清空画布
+            ctx.fillStyle = '#2d5016';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            const gridSize = 50;
+            const offsetX = -playerX % gridSize;
+            const offsetY = -playerY % gridSize;
+            
+            for (let x = offsetX; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = offsetY; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            ctx.save();
+            ctx.translate(canvas.width / 2 - playerX, canvas.height / 2 - playerY);
+
+            // 绘制树木
+            trees.forEach(tree => {
+                ctx.fillStyle = tree.color;
+                ctx.beginPath();
+                ctx.arc(tree.x, tree.y, tree.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 树干
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(tree.x - 5, tree.y, 10, 15);
+            });
+
+            // 绘制其他玩家
+            Object.values(players).forEach(player => {
+                if (!player.x || !player.y) return;
+                
+                ctx.fillStyle = '#3498db';
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 玩家名字
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(player.name, player.x, player.y - 20);
+            });
+
+            // 绘制自己
+            ctx.fillStyle = '#00ff88';
+            ctx.shadowColor = '#00ff88';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(playerX, playerY, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.restore();
+        }
+
+        // 键盘输入
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const message = {
+                author: playerName,
+                text: text,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            database.ref('messages').push(message);
+            input.value = '';
+        }
+
+        // 显示消息
+        function displayMessage(msg) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            
+            const isOwn = msg.author === playerName;
+            div.className = `message ${isOwn ? 'own' : 'other'}`;
+            
+            const time = new Date(msg.timestamp).toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            div.innerHTML = `
+                ${!isOwn ? `<div class="message-author">${msg.author}</div>` : ''}
+                <div>${escapeHtml(msg.text)}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 转义 HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 回车发送
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // 清理离线玩家
+        function cleanupOfflinePlayers() {
+            const now = Date.now();
+            database.ref('players').once('value', (snapshot) => {
+                snapshot.forEach((child) => {
+                    const player = child.val();
+                    if (now - player.lastActive > 30000) {
+                        child.ref.remove();
+                    }
+                });
+            });
+        }
+
+        // 页面关闭时清理
+        window.addEventListener('beforeunload', () => {
+            if (playerId) {
+                database.ref('players/' + playerId).remove();
+            }
+        });
+    </script>
+</body>
+</html>
