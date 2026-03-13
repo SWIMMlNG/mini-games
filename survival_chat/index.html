@@ -602,6 +602,12 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
+            // 绘制自己的名字
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(playerName + ' (你)', playerX, playerY - 25);
+
             ctx.restore();
         }
 
