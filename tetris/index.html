@@ -2,13 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🎮 俄罗斯方块 - Tetris</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            touch-action: none;
         }
 
         body {
@@ -19,12 +20,13 @@
             justify-content: center;
             align-items: center;
             color: #fff;
-            padding: 20px;
+            padding: 10px;
+            overflow: hidden;
         }
 
         .game-wrapper {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             align-items: flex-start;
             flex-wrap: wrap;
             justify-content: center;
@@ -35,13 +37,17 @@
         }
 
         h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.8em;
+            margin-bottom: 8px;
             background: linear-gradient(45deg, #9b59b6, #3498db);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 20px rgba(155, 89, 182, 0.3);
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
         #gameCanvas {
@@ -49,51 +55,55 @@
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(155, 89, 182, 0.3);
             background: #0a0a0a;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
         }
 
         .side-panel {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .panel-box {
             background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             backdrop-filter: blur(10px);
-            min-width: 150px;
+            min-width: 120px;
         }
 
         .panel-title {
             color: #888;
-            font-size: 0.9em;
-            margin-bottom: 10px;
+            font-size: 0.85em;
+            margin-bottom: 8px;
         }
 
         .panel-value {
             color: #9b59b6;
             font-weight: bold;
-            font-size: 1.8em;
+            font-size: 1.5em;
         }
 
         #nextCanvas {
             border: 2px solid #3498db;
             border-radius: 5px;
             background: #0a0a0a;
+            max-width: 100%;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 12px 30px;
-            font-size: 1.1em;
+            padding: 10px 20px;
+            font-size: 0.95em;
             border: none;
             border-radius: 25px;
             cursor: pointer;
@@ -125,29 +135,95 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
 
-        .instructions {
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        .speed-control label {
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        .speed-control input[type="range"] {
+            width: 80px;
+        }
+
+        .speed-value {
+            color: #9b59b6;
+            font-weight: bold;
+            min-width: 35px;
+            font-size: 0.9em;
+        }
+
+        .mobile-controls {
+            display: none;
             margin-top: 15px;
-            padding: 15px;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            grid-template-rows: repeat(3, 70px);
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .d-btn {
+            width: 70px;
+            height: 70px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(155, 89, 182, 0.3);
+            color: #fff;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .d-btn:hover, .d-btn:active {
+            background: rgba(155, 89, 182, 0.6);
+            transform: scale(0.95);
+        }
+
+        .d-btn.up { grid-column: 2; grid-row: 1; }
+        .d-btn.left { grid-column: 1; grid-row: 2; }
+        .d-btn.right { grid-column: 3; grid-row: 2; }
+        .d-btn.down { grid-column: 2; grid-row: 3; }
+        .d-btn.rotate { grid-column: 2; grid-row: 2; background: rgba(52, 152, 219, 0.4); font-size: 1.3em; }
+        .d-btn.drop { grid-column: 1; grid-row: 3; background: rgba(231, 76, 60, 0.4); font-size: 1.2em; }
+
+        .instructions {
+            margin-top: 10px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            font-size: 0.85em;
+            font-size: 0.8em;
             color: #aaa;
             max-width: 300px;
         }
 
         .instructions h3 {
             color: #9b59b6;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
         }
 
         .key {
             display: inline-block;
-            padding: 2px 6px;
+            padding: 2px 5px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 4px;
             margin: 0 1px;
             font-family: monospace;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .overlay {
@@ -169,29 +245,47 @@
         }
 
         .overlay h2 {
-            font-size: 3em;
-            margin-bottom: 20px;
+            font-size: 2.5em;
+            margin-bottom: 15px;
             color: #ff4444;
             text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
         }
 
         .overlay .final-score {
-            font-size: 1.5em;
-            margin-bottom: 30px;
+            font-size: 1.3em;
+            margin-bottom: 25px;
             color: #9b59b6;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 768px) {
             .game-wrapper {
                 flex-direction: column;
                 align-items: center;
             }
-            #gameCanvas {
-                width: 300px;
-                height: 600px;
+            h1 { font-size: 1.5em; }
+            .side-panel {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
             }
-            h1 {
-                font-size: 2em;
+            .panel-box {
+                min-width: 80px;
+                padding: 10px;
+            }
+            .mobile-controls { display: block; }
+            .instructions { display: none; }
+            #gameCanvas { max-width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .d-pad {
+                grid-template-columns: repeat(3, 60px);
+                grid-template-rows: repeat(3, 60px);
+            }
+            .d-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5em;
             }
         }
     </style>
@@ -200,11 +294,29 @@
     <div class="game-wrapper">
         <div class="game-container">
             <h1>🎮 俄罗斯方块</h1>
-            <canvas id="gameCanvas" width="300" height="600"></canvas>
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" width="300" height="600"></canvas>
+            </div>
             
             <div class="controls">
-                <button class="btn btn-start" id="startBtn" onclick="startGame()">开始游戏</button>
-                <a href="../index.html" class="btn btn-back">← 返回大厅</a>
+                <button class="btn btn-start" id="startBtn" onclick="startGame()">开始</button>
+                <div class="speed-control">
+                    <label>速度:</label>
+                    <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+                    <span class="speed-value" id="speedValue">1.0x</span>
+                </div>
+                <a href="../index.html" class="btn btn-back">← 返回</a>
+            </div>
+
+            <div class="mobile-controls">
+                <div class="d-pad">
+                    <button class="d-btn up" ontouchstart="handleControl('rotate')" onmousedown="handleControl('rotate')">↻</button>
+                    <button class="d-btn left" ontouchstart="handleControl('left')" onmousedown="handleControl('left')">◀</button>
+                    <button class="d-btn rotate" ontouchstart="handleControl('rotate')" onmousedown="handleControl('rotate')">↻</button>
+                    <button class="d-btn right" ontouchstart="handleControl('right')" onmousedown="handleControl('right')">▶</button>
+                    <button class="d-btn drop" ontouchstart="handleControl('drop')" onmousedown="handleControl('drop')">⤓</button>
+                    <button class="d-btn down" ontouchstart="handleControl('down')" onmousedown="handleControl('down')">▼</button>
+                </div>
             </div>
 
             <div class="instructions">
@@ -224,7 +336,7 @@
                 <div class="panel-value" id="level">1</div>
             </div>
             <div class="panel-box">
-                <div class="panel-title">消除行数</div>
+                <div class="panel-title">消除</div>
                 <div class="panel-value" id="lines">0</div>
             </div>
             <div class="panel-box">
@@ -251,6 +363,18 @@
         const COLS = 10;
         const ROWS = 20;
         const BLOCK_SIZE = 30;
+        const GAME_WIDTH = COLS * BLOCK_SIZE;
+        const GAME_HEIGHT = ROWS * BLOCK_SIZE;
+
+        // 响应式画布尺寸
+        function resizeCanvas() {
+            const maxWidth = Math.min(window.innerWidth - 40, 300);
+            const scale = maxWidth / GAME_WIDTH;
+            canvas.style.width = maxWidth + 'px';
+            canvas.style.height = (GAME_HEIGHT * scale) + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
         // 方块形状定义
         const SHAPES = [
@@ -293,6 +417,7 @@
         let dropCounter = 0;
         let dropInterval = 1000;
         let lastTime = 0;
+        let speedMultiplier = 1;
 
         // 初始化游戏板
         function createBoard() {
@@ -368,7 +493,7 @@
                 lines += linesCleared;
                 score += [0, 100, 300, 600, 1000][linesCleared] * level;
                 level = Math.floor(lines / 10) + 1;
-                dropInterval = Math.max(100, 1000 - (level - 1) * 100);
+                dropInterval = Math.max(100, 1000 - (level - 1) * 100) / speedMultiplier;
                 updateUI();
             }
         }
@@ -392,7 +517,7 @@
         // 绘制游戏板
         function drawBoard() {
             ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
             // 绘制网格
             ctx.strokeStyle = '#1a1a1a';
@@ -400,13 +525,13 @@
             for (let x = 0; x <= COLS; x++) {
                 ctx.beginPath();
                 ctx.moveTo(x * BLOCK_SIZE, 0);
-                ctx.lineTo(x * BLOCK_SIZE, canvas.height);
+                ctx.lineTo(x * BLOCK_SIZE, GAME_HEIGHT);
                 ctx.stroke();
             }
             for (let y = 0; y <= ROWS; y++) {
                 ctx.beginPath();
                 ctx.moveTo(0, y * BLOCK_SIZE);
-                ctx.lineTo(canvas.width, y * BLOCK_SIZE);
+                ctx.lineTo(GAME_WIDTH, y * BLOCK_SIZE);
                 ctx.stroke();
             }
 
@@ -515,7 +640,7 @@
             score = 0;
             level = 1;
             lines = 0;
-            dropInterval = 1000;
+            dropInterval = 1000 / speedMultiplier;
             gameRunning = true;
             gamePaused = false;
             
@@ -547,6 +672,53 @@
             document.getElementById('startBtn').style.display = 'inline-block';
         }
 
+        // 虚拟按键控制
+        function handleControl(action) {
+            if (!gameRunning || gamePaused) {
+                if (!gameRunning && action === 'rotate') startGame();
+                return;
+            }
+
+            switch(action) {
+                case 'left':
+                    currentPiece.x--;
+                    if (collide(board, currentPiece)) currentPiece.x++;
+                    break;
+                case 'right':
+                    currentPiece.x++;
+                    if (collide(board, currentPiece)) currentPiece.x--;
+                    break;
+                case 'down':
+                    dropPiece();
+                    score += 1;
+                    updateUI();
+                    break;
+                case 'rotate':
+                    const rotated = rotate(currentPiece);
+                    if (!collide(board, rotated)) currentPiece = rotated;
+                    break;
+                case 'drop':
+                    while (!collide(board, currentPiece)) {
+                        currentPiece.y++;
+                        score += 2;
+                    }
+                    currentPiece.y--;
+                    dropPiece();
+                    updateUI();
+                    break;
+            }
+            draw();
+        }
+
+        // 速度控制
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            speedMultiplier = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = speedMultiplier.toFixed(1) + 'x';
+            if (gameRunning) {
+                dropInterval = Math.max(100, 1000 - (level - 1) * 100) / speedMultiplier;
+            }
+        });
+
         // 键盘控制
         document.addEventListener('keydown', (e) => {
             if (!gameRunning || gamePaused) {
@@ -556,23 +728,36 @@
 
             switch (e.key) {
                 case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    e.preventDefault();
                     currentPiece.x--;
                     if (collide(board, currentPiece)) currentPiece.x++;
                     break;
                 case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    e.preventDefault();
                     currentPiece.x++;
                     if (collide(board, currentPiece)) currentPiece.x--;
                     break;
                 case 'ArrowDown':
+                case 's':
+                case 'S':
+                    e.preventDefault();
                     dropPiece();
                     score += 1;
                     updateUI();
                     break;
                 case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    e.preventDefault();
                     const rotated = rotate(currentPiece);
                     if (!collide(board, rotated)) currentPiece = rotated;
                     break;
                 case ' ':
+                    e.preventDefault();
                     while (!collide(board, currentPiece)) {
                         currentPiece.y++;
                         score += 2;

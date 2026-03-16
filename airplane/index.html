@@ -2,13 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>✈️ 飞机大战 - Airplane Battle</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            touch-action: none;
         }
 
         body {
@@ -19,47 +20,54 @@
             justify-content: center;
             align-items: center;
             color: #fff;
-            padding: 20px;
+            padding: 10px;
+            overflow: hidden;
         }
 
         .game-container {
             text-align: center;
+            width: 100%;
+            max-width: 800px;
         }
 
         h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2em;
+            margin-bottom: 8px;
             background: linear-gradient(45deg, #f39c12, #e74c3c);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 20px rgba(243, 156, 18, 0.3);
         }
 
         .game-info {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
         }
 
         .info-item {
             background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 8px 15px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
         }
 
         .info-label {
             color: #888;
-            font-size: 0.8em;
+            font-size: 0.75em;
         }
 
         .info-value {
             color: #f39c12;
             font-weight: bold;
-            font-size: 1.3em;
+            font-size: 1.1em;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
         #gameCanvas {
@@ -67,20 +75,22 @@
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(243, 156, 18, 0.3);
             background: #0a0a0a;
-            cursor: crosshair;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 12px 30px;
-            font-size: 1.1em;
+            padding: 10px 25px;
+            font-size: 1em;
             border: none;
             border-radius: 25px;
             cursor: pointer;
@@ -112,27 +122,92 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
 
-        .instructions {
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .speed-control label {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .speed-control input[type="range"] {
+            width: 100px;
+        }
+
+        .speed-value {
+            color: #f39c12;
+            font-weight: bold;
+            min-width: 40px;
+        }
+
+        .mobile-controls {
+            display: none;
             margin-top: 15px;
-            padding: 15px;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            grid-template-rows: repeat(3, 70px);
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .d-btn {
+            width: 70px;
+            height: 70px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(243, 156, 18, 0.3);
+            color: #fff;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .d-btn:hover, .d-btn:active {
+            background: rgba(243, 156, 18, 0.6);
+            transform: scale(0.95);
+        }
+
+        .d-btn.up { grid-column: 2; grid-row: 1; }
+        .d-btn.left { grid-column: 1; grid-row: 2; }
+        .d-btn.right { grid-column: 3; grid-row: 2; }
+        .d-btn.down { grid-column: 2; grid-row: 3; }
+        .d-btn.center { grid-column: 2; grid-row: 2; background: rgba(231, 76, 60, 0.4); font-size: 1.2em; }
+
+        .instructions {
+            margin-top: 10px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: #aaa;
         }
 
         .instructions h3 {
             color: #f39c12;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 1em;
         }
 
         .key {
             display: inline-block;
-            padding: 3px 8px;
+            padding: 2px 6px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
+            border-radius: 4px;
             margin: 0 2px;
             font-family: monospace;
+            font-size: 0.9em;
         }
 
         .overlay {
@@ -154,25 +229,36 @@
         }
 
         .overlay h2 {
-            font-size: 3em;
-            margin-bottom: 20px;
+            font-size: 2.5em;
+            margin-bottom: 15px;
             color: #ff4444;
             text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
         }
 
         .overlay .final-score {
-            font-size: 1.5em;
-            margin-bottom: 30px;
+            font-size: 1.3em;
+            margin-bottom: 25px;
             color: #f39c12;
         }
 
-        @media (max-width: 600px) {
-            #gameCanvas {
-                width: 100%;
-                max-width: 400px;
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6em; }
+            .game-info { gap: 10px; }
+            .info-item { padding: 6px 12px; }
+            .mobile-controls { display: block; }
+            .instructions { display: none; }
+            #gameCanvas { max-width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .d-pad {
+                grid-template-columns: repeat(3, 60px);
+                grid-template-rows: repeat(3, 60px);
             }
-            h1 {
-                font-size: 2em;
+            .d-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5em;
             }
         }
     </style>
@@ -196,17 +282,34 @@
             </div>
         </div>
 
-        <canvas id="gameCanvas" width="600" height="700"></canvas>
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="600" height="700"></canvas>
+        </div>
 
         <div class="controls">
             <button class="btn btn-start" id="startBtn" onclick="startGame()">开始游戏</button>
-            <a href="../index.html" class="btn btn-back">← 返回大厅</a>
+            <div class="speed-control">
+                <label>游戏速度:</label>
+                <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+                <span class="speed-value" id="speedValue">1.0x</span>
+            </div>
+            <a href="../index.html" class="btn btn-back">← 返回</a>
+        </div>
+
+        <div class="mobile-controls">
+            <div class="d-pad">
+                <button class="d-btn up" ontouchstart="movePlayer('up')" onmousedown="movePlayer('up')">▲</button>
+                <button class="d-btn left" ontouchstart="movePlayer('left')" onmousedown="movePlayer('left')">◀</button>
+                <button class="d-btn center" ontouchstart="playerShoot()" onmousedown="playerShoot()">🔥</button>
+                <button class="d-btn right" ontouchstart="movePlayer('right')" onmousedown="movePlayer('right')">▶</button>
+                <button class="d-btn down" ontouchstart="movePlayer('down')" onmousedown="movePlayer('down')">▼</button>
+            </div>
         </div>
 
         <div class="instructions">
             <h3>🎮 操作说明</h3>
-            <p>使用鼠标移动飞机，自动射击敌人！</p>
-            <p>躲避敌机，击毁敌人获得分数！</p>
+            <p>使用 <span class="key">方向键</span> 或 <span class="key">WASD</span> 移动飞机</p>
+            <p>自动射击敌人，躲避敌机，击毁敌人获得分数！</p>
         </div>
     </div>
 
@@ -221,12 +324,27 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        // 游戏配置
+        const GAME_WIDTH = 600;
+        const GAME_HEIGHT = 700;
+        
+        // 响应式画布尺寸
+        function resizeCanvas() {
+            const maxWidth = Math.min(window.innerWidth - 20, 600);
+            const scale = maxWidth / GAME_WIDTH;
+            canvas.style.width = maxWidth + 'px';
+            canvas.style.height = (GAME_HEIGHT * scale) + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
         // 游戏状态
         let gameRunning = false;
         let score = 0;
         let lives = 3;
         let wave = 1;
         let animationId = null;
+        let gameSpeed = 1;
 
         // 游戏对象
         let player, bullets, enemies, particles, stars;
@@ -264,18 +382,18 @@
         // 星星背景
         class Star {
             constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
+                this.x = Math.random() * GAME_WIDTH;
+                this.y = Math.random() * GAME_HEIGHT;
                 this.radius = Math.random() * 1.5;
                 this.speed = Math.random() * 2 + 0.5;
                 this.brightness = Math.random();
             }
 
             update() {
-                this.y += this.speed;
-                if (this.y > canvas.height) {
+                this.y += this.speed * gameSpeed;
+                if (this.y > GAME_HEIGHT) {
                     this.y = 0;
-                    this.x = Math.random() * canvas.width;
+                    this.x = Math.random() * GAME_WIDTH;
                 }
             }
 
@@ -289,13 +407,13 @@
 
         // 初始化游戏
         function initGame() {
-            // 玩家飞机
+            // 玩家飞机 - 放大尺寸
             player = {
-                x: canvas.width / 2,
-                y: canvas.height - 80,
-                width: 40,
-                height: 50,
-                speed: 5
+                x: GAME_WIDTH / 2,
+                y: GAME_HEIGHT - 100,
+                width: 60,
+                height: 75,
+                speed: 6
             };
 
             // 初始化数组
@@ -317,15 +435,15 @@
         // 创建敌人
         function spawnEnemy() {
             const types = [
-                { width: 30, height: 30, speed: 2, hp: 1, score: 10, color: '#e74c3c' },
-                { width: 40, height: 40, speed: 1.5, hp: 2, score: 20, color: '#9b59b6' },
-                { width: 50, height: 50, speed: 1, hp: 3, score: 30, color: '#f39c12' }
+                { width: 40, height: 40, speed: 2, hp: 1, score: 10, color: '#e74c3c' },
+                { width: 50, height: 50, speed: 1.5, hp: 2, score: 20, color: '#9b59b6' },
+                { width: 60, height: 60, speed: 1, hp: 3, score: 30, color: '#f39c12' }
             ];
             
             const type = types[Math.min(Math.floor(Math.random() * wave / 3), 2)];
             
             enemies.push({
-                x: Math.random() * (canvas.width - type.width),
+                x: Math.random() * (GAME_WIDTH - type.width),
                 y: -type.height,
                 ...type,
                 currentHp: type.hp
@@ -366,12 +484,12 @@
             stars.forEach(star => star.update());
 
             // 玩家自动射击
-            if (Math.random() < 0.05) {
+            if (Math.random() < 0.05 * gameSpeed) {
                 bullets.push({
                     x: player.x,
-                    y: player.y - 20,
-                    width: 4,
-                    height: 15,
+                    y: player.y - 30,
+                    width: 6,
+                    height: 20,
                     speed: 10,
                     color: '#00ff88'
                 });
@@ -379,18 +497,18 @@
 
             // 更新子弹
             bullets = bullets.filter(bullet => {
-                bullet.y -= bullet.speed;
+                bullet.y -= bullet.speed * gameSpeed;
                 return bullet.y > -bullet.height;
             });
 
             // 生成敌人
-            if (Math.random() < 0.02 + wave * 0.005) {
+            if (Math.random() < (0.02 + wave * 0.005) * gameSpeed) {
                 spawnEnemy();
             }
 
             // 更新敌人
             enemies = enemies.filter(enemy => {
-                enemy.y += enemy.speed;
+                enemy.y += enemy.speed * gameSpeed;
 
                 // 检查与玩家碰撞
                 if (checkCollision(enemy, player)) {
@@ -404,7 +522,7 @@
                 }
 
                 // 检查是否飞出屏幕
-                if (enemy.y > canvas.height) {
+                if (enemy.y > GAME_HEIGHT) {
                     return false;
                 }
 
@@ -412,8 +530,10 @@
             });
 
             // 子弹与敌人碰撞检测
-            bullets.forEach((bullet, bIndex) => {
-                enemies.forEach((enemy, eIndex) => {
+            for (let bIndex = bullets.length - 1; bIndex >= 0; bIndex--) {
+                const bullet = bullets[bIndex];
+                for (let eIndex = enemies.length - 1; eIndex >= 0; eIndex--) {
+                    const enemy = enemies[eIndex];
                     if (checkCollision(bullet, enemy)) {
                         enemy.currentHp--;
                         bullets.splice(bIndex, 1);
@@ -430,9 +550,10 @@
                             
                             updateUI();
                         }
+                        break;
                     }
-                });
-            });
+                }
+            }
 
             // 更新粒子
             particles = particles.filter(p => {
@@ -443,17 +564,19 @@
 
         // 碰撞检测
         function checkCollision(a, b) {
-            return a.x < b.x + b.width &&
-                   a.x + (a.width || 4) > b.x &&
-                   a.y < b.y + b.height &&
-                   a.y + (a.height || 15) > b.y;
+            const aWidth = a.width || 4;
+            const aHeight = a.height || 15;
+            return a.x < b.x + b.width / 2 + aWidth / 2 &&
+                   a.x > b.x - b.width / 2 - aWidth / 2 &&
+                   a.y < b.y + b.height / 2 + aHeight / 2 &&
+                   a.y > b.y - b.height / 2 - aHeight / 2;
         }
 
         // 绘制游戏
         function draw() {
             // 清空画布
             ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
             // 绘制星星
             stars.forEach(star => star.draw());
@@ -501,7 +624,7 @@
             particles.forEach(p => p.draw());
         }
 
-        // 绘制玩家飞机
+        // 绘制玩家飞机 - 放大版
         function drawPlayer() {
             const x = player.x;
             const y = player.y;
@@ -543,9 +666,9 @@
             ctx.fillStyle = '#e74c3c';
             ctx.shadowColor = '#e74c3c';
             ctx.beginPath();
-            ctx.moveTo(x - 5, y + h / 3);
-            ctx.lineTo(x, y + h / 2 + Math.random() * 15 + 10);
-            ctx.lineTo(x + 5, y + h / 3);
+            ctx.moveTo(x - 8, y + h / 3);
+            ctx.lineTo(x, y + h / 2 + Math.random() * 20 + 15);
+            ctx.lineTo(x + 8, y + h / 3);
             ctx.closePath();
             ctx.fill();
 
@@ -568,26 +691,133 @@
             document.getElementById('startBtn').style.display = 'inline-block';
         }
 
+        // 移动玩家（虚拟按键）
+        function movePlayer(direction) {
+            if (!gameRunning) return;
+            const moveDistance = player.speed * 3;
+            switch(direction) {
+                case 'up':
+                    player.y = Math.max(player.height / 2, player.y - moveDistance);
+                    break;
+                case 'down':
+                    player.y = Math.min(GAME_HEIGHT - player.height / 2, player.y + moveDistance);
+                    break;
+                case 'left':
+                    player.x = Math.max(player.width / 2, player.x - moveDistance);
+                    break;
+                case 'right':
+                    player.x = Math.min(GAME_WIDTH - player.width / 2, player.x + moveDistance);
+                    break;
+            }
+        }
+
+        // 玩家射击
+        function playerShoot() {
+            if (!gameRunning) return;
+            bullets.push({
+                x: player.x,
+                y: player.y - 30,
+                width: 6,
+                height: 20,
+                speed: 12,
+                color: '#00ff88'
+            });
+        }
+
+        // 获取鼠标/触摸在画布上的正确坐标
+        function getCanvasCoordinates(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = GAME_WIDTH / rect.width;
+            const scaleY = GAME_HEIGHT / rect.height;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
         // 鼠标控制
         canvas.addEventListener('mousemove', (e) => {
             if (!gameRunning) return;
-            const rect = canvas.getBoundingClientRect();
-            player.x = e.clientX - rect.left;
+            const coords = getCanvasCoordinates(e.clientX, e.clientY);
+            player.x = coords.x;
+            player.y = coords.y;
             
             // 限制玩家范围
             if (player.x < player.width / 2) player.x = player.width / 2;
-            if (player.x > canvas.width - player.width / 2) player.x = canvas.width - player.width / 2;
+            if (player.x > GAME_WIDTH - player.width / 2) player.x = GAME_WIDTH - player.width / 2;
+            if (player.y < player.height / 2) player.y = player.height / 2;
+            if (player.y > GAME_HEIGHT - player.height / 2) player.y = GAME_HEIGHT - player.height / 2;
         });
 
-        // 触摸控制
+        // 触摸控制 - 修复坐标问题
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameRunning) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+            player.x = coords.x;
+            player.y = coords.y;
+            
+            if (player.x < player.width / 2) player.x = player.width / 2;
+            if (player.x > GAME_WIDTH - player.width / 2) player.x = GAME_WIDTH - player.width / 2;
+            if (player.y < player.height / 2) player.y = player.height / 2;
+            if (player.y > GAME_HEIGHT - player.height / 2) player.y = GAME_HEIGHT - player.height / 2;
+        }, { passive: false });
+
         canvas.addEventListener('touchmove', (e) => {
             if (!gameRunning) return;
             e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            player.x = e.touches[0].clientX - rect.left;
+            const touch = e.touches[0];
+            const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+            player.x = coords.x;
+            player.y = coords.y;
             
             if (player.x < player.width / 2) player.x = player.width / 2;
-            if (player.x > canvas.width - player.width / 2) player.x = canvas.width - player.width / 2;
+            if (player.x > GAME_WIDTH - player.width / 2) player.x = GAME_WIDTH - player.width / 2;
+            if (player.y < player.height / 2) player.y = player.height / 2;
+            if (player.y > GAME_HEIGHT - player.height / 2) player.y = GAME_HEIGHT - player.height / 2;
+        }, { passive: false });
+
+        // 速度控制
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            gameSpeed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = gameSpeed.toFixed(1) + 'x';
+        });
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+            const moveDistance = player.speed * 2;
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    e.preventDefault();
+                    player.y = Math.max(player.height / 2, player.y - moveDistance);
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    e.preventDefault();
+                    player.y = Math.min(GAME_HEIGHT - player.height / 2, player.y + moveDistance);
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    e.preventDefault();
+                    player.x = Math.max(player.width / 2, player.x - moveDistance);
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    e.preventDefault();
+                    player.x = Math.min(GAME_WIDTH - player.width / 2, player.x + moveDistance);
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    playerShoot();
+                    break;
+            }
         });
 
         // 初始化

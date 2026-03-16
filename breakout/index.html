@@ -2,13 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🧱 打砖块 - Breakout</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            touch-action: none;
         }
 
         body {
@@ -19,47 +20,54 @@
             justify-content: center;
             align-items: center;
             color: #fff;
-            padding: 20px;
+            padding: 10px;
+            overflow: hidden;
         }
 
         .game-container {
             text-align: center;
+            width: 100%;
+            max-width: 800px;
         }
 
         h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2em;
+            margin-bottom: 8px;
             background: linear-gradient(45deg, #00ff88, #00ccff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
         }
 
         .game-info {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
         }
 
         .info-item {
             background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 8px 15px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
         }
 
         .info-label {
             color: #888;
-            font-size: 0.8em;
+            font-size: 0.75em;
         }
 
         .info-value {
             color: #00ff88;
             font-weight: bold;
-            font-size: 1.3em;
+            font-size: 1.1em;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
         #gameCanvas {
@@ -67,19 +75,22 @@
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
             background: #0a0a0a;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 12px 30px;
-            font-size: 1.1em;
+            padding: 10px 25px;
+            font-size: 1em;
             border: none;
             border-radius: 25px;
             cursor: pointer;
@@ -111,18 +122,80 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
 
-        .instructions {
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .speed-control label {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .speed-control input[type="range"] {
+            width: 100px;
+        }
+
+        .speed-value {
+            color: #00ff88;
+            font-weight: bold;
+            min-width: 40px;
+        }
+
+        .mobile-controls {
+            display: none;
             margin-top: 15px;
-            padding: 15px;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            grid-template-rows: 70px;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .d-btn {
+            width: 70px;
+            height: 70px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(0, 255, 136, 0.3);
+            color: #fff;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .d-btn:hover, .d-btn:active {
+            background: rgba(0, 255, 136, 0.6);
+            transform: scale(0.95);
+        }
+
+        .d-btn.left { grid-column: 1; }
+        .d-btn.center { grid-column: 2; background: rgba(0, 204, 255, 0.4); font-size: 1.2em; }
+        .d-btn.right { grid-column: 3; }
+
+        .instructions {
+            margin-top: 10px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: #aaa;
         }
 
         .instructions h3 {
             color: #00ff88;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 1em;
         }
 
         .overlay {
@@ -144,8 +217,8 @@
         }
 
         .overlay h2 {
-            font-size: 3em;
-            margin-bottom: 20px;
+            font-size: 2.5em;
+            margin-bottom: 15px;
             text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
         }
 
@@ -158,18 +231,29 @@
         }
 
         .overlay .final-score {
-            font-size: 1.5em;
-            margin-bottom: 30px;
+            font-size: 1.3em;
+            margin-bottom: 25px;
             color: #00ccff;
         }
 
-        @media (max-width: 600px) {
-            #gameCanvas {
-                width: 100%;
-                max-width: 400px;
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6em; }
+            .game-info { gap: 10px; }
+            .info-item { padding: 6px 12px; }
+            .mobile-controls { display: block; }
+            .instructions { display: none; }
+            #gameCanvas { max-width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .d-pad {
+                grid-template-columns: repeat(3, 60px);
+                grid-template-rows: 60px;
             }
-            h1 {
-                font-size: 2em;
+            .d-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5em;
             }
         }
     </style>
@@ -193,16 +277,32 @@
             </div>
         </div>
 
-        <canvas id="gameCanvas" width="600" height="500"></canvas>
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="600" height="500"></canvas>
+        </div>
 
         <div class="controls">
             <button class="btn btn-start" id="startBtn" onclick="startGame()">开始游戏</button>
-            <a href="../index.html" class="btn btn-back">← 返回大厅</a>
+            <div class="speed-control">
+                <label>球速:</label>
+                <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+                <span class="speed-value" id="speedValue">1.0x</span>
+            </div>
+            <a href="../index.html" class="btn btn-back">← 返回</a>
+        </div>
+
+        <div class="mobile-controls">
+            <div class="d-pad">
+                <button class="d-btn left" ontouchstart="movePaddle('left')" onmousedown="movePaddle('left')">◀</button>
+                <button class="d-btn center" ontouchstart="launchBall()" onmousedown="launchBall()">🚀</button>
+                <button class="d-btn right" ontouchstart="movePaddle('right')" onmousedown="movePaddle('right')">▶</button>
+            </div>
         </div>
 
         <div class="instructions">
             <h3>🎮 操作说明</h3>
-            <p>使用鼠标或触摸移动挡板，反弹小球击碎所有砖块！</p>
+            <p>使用 <span class="key">鼠标</span>、<span class="key">触摸</span> 或 <span class="key">方向键</span> 移动挡板</p>
+            <p>反弹小球击碎所有砖块！点击发射小球</p>
         </div>
     </div>
 
@@ -224,12 +324,28 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        // 游戏配置
+        const GAME_WIDTH = 600;
+        const GAME_HEIGHT = 500;
+
+        // 响应式画布尺寸
+        function resizeCanvas() {
+            const maxWidth = Math.min(window.innerWidth - 20, 600);
+            const scale = maxWidth / GAME_WIDTH;
+            canvas.style.width = maxWidth + 'px';
+            canvas.style.height = (GAME_HEIGHT * scale) + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
         // 游戏状态
         let gameRunning = false;
         let score = 0;
         let lives = 3;
         let level = 1;
         let animationId = null;
+        let ballSpeedMultiplier = 1;
+        let ballLaunched = false;
 
         // 游戏对象
         let paddle, ball, bricks, particles;
@@ -280,11 +396,11 @@
         function initGame() {
             // 挡板
             paddle = {
-                x: canvas.width / 2 - 60,
-                y: canvas.height - 30,
+                x: GAME_WIDTH / 2 - 60,
+                y: GAME_HEIGHT - 30,
                 width: 120,
                 height: 15,
-                speed: 8
+                speed: 10
             };
 
             // 小球
@@ -300,6 +416,7 @@
             score = 0;
             lives = 3;
             level = 1;
+            ballLaunched = false;
             updateUI();
 
             // 隐藏覆盖层
@@ -310,13 +427,22 @@
         // 重置小球
         function resetBall() {
             ball = {
-                x: canvas.width / 2,
-                y: canvas.height - 50,
-                radius: 8,
+                x: GAME_WIDTH / 2,
+                y: GAME_HEIGHT - 50,
+                radius: 10,
                 speed: 5,
-                dx: 4 * (Math.random() > 0.5 ? 1 : -1),
-                dy: -4
+                dx: 0,
+                dy: 0
             };
+            ballLaunched = false;
+        }
+
+        // 发射小球
+        function launchBall() {
+            if (!gameRunning || ballLaunched) return;
+            ballLaunched = true;
+            ball.dx = 4 * (Math.random() > 0.5 ? 1 : -1) * ballSpeedMultiplier;
+            ball.dy = -4 * ballSpeedMultiplier;
         }
 
         // 创建砖块
@@ -359,12 +485,19 @@
 
         // 更新游戏状态
         function update() {
+            // 如果球还没发射，跟随挡板
+            if (!ballLaunched) {
+                ball.x = paddle.x + paddle.width / 2;
+                ball.y = paddle.y - ball.radius - 2;
+                return;
+            }
+
             // 更新小球位置
             ball.x += ball.dx;
             ball.y += ball.dy;
 
             // 墙壁碰撞
-            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+            if (ball.x + ball.radius > GAME_WIDTH || ball.x - ball.radius < 0) {
                 ball.dx = -ball.dx;
             }
             if (ball.y - ball.radius < 0) {
@@ -372,7 +505,7 @@
             }
 
             // 底部掉落
-            if (ball.y + ball.radius > canvas.height) {
+            if (ball.y + ball.radius > GAME_HEIGHT) {
                 lives--;
                 updateUI();
                 if (lives <= 0) {
@@ -395,7 +528,8 @@
             }
 
             // 砖块碰撞
-            bricks.forEach(brick => {
+            for (let i = bricks.length - 1; i >= 0; i--) {
+                const brick = bricks[i];
                 if (brick.visible &&
                     ball.x > brick.x &&
                     ball.x < brick.x + brick.width &&
@@ -420,8 +554,9 @@
                     if (bricks.every(b => !b.visible)) {
                         gameOver(true);
                     }
+                    break;
                 }
-            });
+            }
 
             // 更新粒子
             particles = particles.filter(p => {
@@ -434,21 +569,21 @@
         function draw() {
             // 清空画布
             ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
             // 绘制网格背景
             ctx.strokeStyle = '#1a1a1a';
             ctx.lineWidth = 1;
-            for (let i = 0; i < canvas.width; i += 20) {
+            for (let i = 0; i < GAME_WIDTH; i += 20) {
                 ctx.beginPath();
                 ctx.moveTo(i, 0);
-                ctx.lineTo(i, canvas.height);
+                ctx.lineTo(i, GAME_HEIGHT);
                 ctx.stroke();
             }
-            for (let i = 0; i < canvas.height; i += 20) {
+            for (let i = 0; i < GAME_HEIGHT; i += 20) {
                 ctx.beginPath();
                 ctx.moveTo(0, i);
-                ctx.lineTo(canvas.width, i);
+                ctx.lineTo(GAME_WIDTH, i);
                 ctx.stroke();
             }
 
@@ -484,6 +619,14 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
+            // 如果没发射，显示提示
+            if (!ballLaunched && gameRunning) {
+                ctx.fillStyle = '#00ff88';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('点击发射小球', GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            }
+
             // 绘制粒子
             particles.forEach(p => p.draw());
         }
@@ -511,28 +654,97 @@
             document.getElementById('startBtn').style.display = 'inline-block';
         }
 
+        // 移动挡板（虚拟按键）
+        function movePaddle(direction) {
+            if (!gameRunning) return;
+            const moveDistance = paddle.speed * 2;
+            if (direction === 'left') {
+                paddle.x = Math.max(0, paddle.x - moveDistance);
+            } else if (direction === 'right') {
+                paddle.x = Math.min(GAME_WIDTH - paddle.width, paddle.x + moveDistance);
+            }
+        }
+
+        // 获取鼠标/触摸在画布上的正确坐标
+        function getCanvasCoordinates(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = GAME_WIDTH / rect.width;
+            return {
+                x: (clientX - rect.left) * scaleX
+            };
+        }
+
         // 鼠标控制
         canvas.addEventListener('mousemove', (e) => {
             if (!gameRunning) return;
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            paddle.x = mouseX - paddle.width / 2;
+            const coords = getCanvasCoordinates(e.clientX, e.clientY);
+            paddle.x = coords.x - paddle.width / 2;
 
             // 限制挡板范围
             if (paddle.x < 0) paddle.x = 0;
-            if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+            if (paddle.x + paddle.width > GAME_WIDTH) paddle.x = GAME_WIDTH - paddle.width;
         });
 
-        // 触摸控制
+        // 点击发射
+        canvas.addEventListener('click', () => {
+            launchBall();
+        });
+
+        // 触摸控制 - 修复坐标问题
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameRunning) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+            paddle.x = coords.x - paddle.width / 2;
+
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.width > GAME_WIDTH) paddle.x = GAME_WIDTH - paddle.width;
+            
+            // 点击发射
+            launchBall();
+        }, { passive: false });
+
         canvas.addEventListener('touchmove', (e) => {
             if (!gameRunning) return;
             e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const touchX = e.touches[0].clientX - rect.left;
-            paddle.x = touchX - paddle.width / 2;
+            const touch = e.touches[0];
+            const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+            paddle.x = coords.x - paddle.width / 2;
 
             if (paddle.x < 0) paddle.x = 0;
-            if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+            if (paddle.x + paddle.width > GAME_WIDTH) paddle.x = GAME_WIDTH - paddle.width;
+        }, { passive: false });
+
+        // 速度控制
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            ballSpeedMultiplier = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = ballSpeedMultiplier.toFixed(1) + 'x';
+        });
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+            const moveDistance = paddle.speed;
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    e.preventDefault();
+                    paddle.x = Math.max(0, paddle.x - moveDistance);
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    e.preventDefault();
+                    paddle.x = Math.min(GAME_WIDTH - paddle.width, paddle.x + moveDistance);
+                    break;
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    launchBall();
+                    break;
+            }
         });
 
         // 初始化
