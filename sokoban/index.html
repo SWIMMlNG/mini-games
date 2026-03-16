@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>📦 推箱子 - Sokoban</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; color: #fff; padding: 10px; padding-top: 15px; }
+        .game-container { text-align: center; touch-action: pan-y; }
+        h1 { font-size: 1.8em; margin-bottom: 5px; background: linear-gradient(45deg, #f39c12, #e74c3c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .game-info { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; }
+        .info-item { background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(10px); }
+        .info-label { color: #888; font-size: 0.75em; }
+        .info-value { color: #f39c12; font-weight: bold; font-size: 1.1em; }
+        .canvas-wrapper { position: relative; display: inline-block; margin-bottom: 10px; }
+        #gameCanvas { border: 3px solid #f39c12; border-radius: 10px; box-shadow: 0 0 30px rgba(243,156,18,0.3); background: #2c3e50; max-width: 100%; height: auto; touch-action: none; }
+        .controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .btn { padding: 10px 20px; font-size: 0.9em; border: none; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-start { background: linear-gradient(45deg, #f39c12, #e74c3c); color: #fff; }
+        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(243,156,18,0.5); }
+        .btn-level { background: linear-gradient(45deg, #3498db, #9b59b6); color: #fff; padding: 8px 15px; font-size: 0.85em; }
+        .btn-level:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(52,152,219,0.5); }
+        .btn-back { background: linear-gradient(45deg, #666, #999); color: #fff; text-decoration: none; display: inline-block; }
+        .btn-back:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .level-selector { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; max-width: 350px; margin-left: auto; margin-right: auto; }
+        .level-btn { width: 40px; height: 40px; border: none; border-radius: 10px; background: rgba(243,156,18,0.3); color: #fff; font-size: 1em; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .level-btn:hover, .level-btn.active { background: rgba(243,156,18,0.8); transform: scale(1.1); }
+        .level-btn.completed { background: rgba(46,204,113,0.6); }
+        .mobile-controls { display: none; margin-top: 10px; }
+        .d-pad { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 8px; justify-content: center; }
+        .d-btn { width: 60px; height: 60px; border: none; border-radius: 15px; background: rgba(243,156,18,0.3); color: #fff; font-size: 1.5em; cursor: pointer; transition: all 0.15s; user-select: none; -webkit-user-select: none; touch-action: manipulation; display: flex; align-items: center; justify-content: center; }
+        .d-btn:hover, .d-btn:active { background: rgba(243,156,18,0.6); transform: scale(0.95); }
+        .d-btn.up { grid-column: 2; grid-row: 1; }
+        .d-btn.left { grid-column: 1; grid-row: 2; }
+        .d-btn.right { grid-column: 3; grid-row: 2; }
+        .d-btn.down { grid-column: 2; grid-row: 3; }
+        .d-btn.undo { grid-column: 2; grid-row: 2; background: rgba(231,76,60,0.4); font-size: 1.2em; }
+        .instructions { margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; font-size: 0.85em; color: #aaa; max-width: 350px; margin-left: auto; margin-right: auto; }
+        .instructions h3 { color: #f39c12; margin-bottom: 8px; font-size: 1em; }
+        .key { display: inline-block; padding: 2px 6px; background: rgba(255,255,255,0.2); border-radius: 4px; margin: 0 2px; font-family: monospace; font-size: 0.9em; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 1000; }
+        .overlay.active { display: flex; }
+        .overlay h2 { font-size: 2.5em; margin-bottom: 15px; color: #2ecc71; text-shadow: 0 0 20px rgba(46,204,113,0.5); }
+        .overlay .level-complete { font-size: 1.3em; margin-bottom: 10px; color: #f39c12; }
+        .overlay .stats { font-size: 1.1em; margin-bottom: 25px; color: #aaa; }
+        .overlay .game-complete { font-size: 2em; margin-bottom: 15px; color: #f1c40f; text-shadow: 0 0 30px rgba(241,196,15,0.5); }
+        @media (max-width: 768px) { h1 { font-size: 1.5em; } .game-info { gap: 10px; } .info-item { padding: 6px 12px; } .mobile-controls { display: block; } .instructions { display: none; } #gameCanvas { max-width: 320px; } .level-btn { width: 35px; height: 35px; font-size: 0.9em; } }
+        @media (max-width: 480px) { .d-pad { grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px); } .d-btn { width: 55px; height: 55px; font-size: 1.3em; } }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>📦 推箱子</h1>
+        <div class="game-info">
+            <div class="info-item"><div class="info-label">关卡</div><div class="info-value" id="level">1</div></div>
+            <div class="info-item"><div class="info-label">步数</div><div class="info-value" id="moves">0</div></div>
+            <div class="info-item"><div class="info-label">推箱</div><div class="info-value" id="pushes">0</div></div>
+        </div>
+        <div class="level-selector" id="levelSelector"></div>
+        <div class="canvas-wrapper"><canvas id="gameCanvas" width="320" height="320"></canvas></div>
+        <div class="controls">
+            <button class="btn btn-start" onclick="restartLevel()">重置</button>
+            <button class="btn btn-level" onclick="prevLevel()">上一关</button>
+            <button class="btn btn-level" onclick="nextLevel()">下一关</button>
+            <button class="btn btn-start" onclick="undoMove()">撤销</button>
+            <a href="../index.html" class="btn btn-back">← 返回</a>
+        </div>
+        <div class="mobile-controls">
+            <div class="d-pad">
+                <button class="d-btn up" ontouchstart="movePlayer('up',event)" onmousedown="movePlayer('up',event)">▲</button>
+                <button class="d-btn left" ontouchstart="movePlayer('left',event)" onmousedown="movePlayer('left',event)">◀</button>
+                <button class="d-btn undo" ontouchstart="undoMove(event)" onmousedown="undoMove(event)">↩</button>
+                <button class="d-btn right" ontouchstart="movePlayer('right',event)" onmousedown="movePlayer('right',event)">▶</button>
+                <button class="d-btn down" ontouchstart="movePlayer('down',event)" onmousedown="movePlayer('down',event)">▼</button>
+            </div>
+        </div>
+        <div class="instructions">
+            <h3>🎮 操作说明</h3>
+            <p>把所有箱子 📦 推到目标点 🎯 上即可过关</p>
+            <p>使用 <span class="key">方向键</span> 或 <span class="key">WASD</span> 移动</p>
+            <p><span class="key">U</span> 撤销 | <span class="key">R</span> 重置关卡</p>
+        </div>
+    </div>
+    <div class="overlay" id="levelCompleteOverlay">
+        <h2>🎉 关卡完成!</h2>
+        <div class="level-complete">第 <span id="completedLevel">1</span> 关通关!</div>
+        <div class="stats"><p>步数: <span id="levelMoves">0</span></p><p>推箱次数: <span id="levelPushes">0</span></p></div>
+        <button class="btn btn-start" onclick="nextLevel()">下一关 →</button>
+        <button class="btn btn-back" onclick="closeOverlay()" style="margin-top:10px;">继续挑战</button>
+    </div>
+    <div class="overlay" id="gameCompleteOverlay">
+        <div class="game-complete">🏆 恭喜通关!</div>
+        <h2>所有关卡已完成!</h2>
+        <div class="stats"><p>总步数: <span id="totalMoves">0</span></p><p>总推箱: <span id="totalPushes">0</span></p></div>
+        <button class="btn btn-start" onclick="resetGame()">重新开始</button>
+        <a href="../index.html" class="btn btn-back" style="margin-top:15px;">← 返回大厅</a>
+    </div>
+    <script>
+        const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d'),TILE_SIZE=32,GRID_SIZE=10;
+        const TILES={EMPTY:0,WALL:1,BOX:2,TARGET:3,PLAYER:4,BOX_ON_TARGET:5,PLAYER_ON_TARGET:6};
+        const LEVELS=[
+            {name:"入门",map:[[1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,1],[1,0,4,0,2,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,3,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"练习",map:[[1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,1],[1,0,4,0,2,0,0,3,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"双箱",map:[[1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,1],[1,0,4,0,0,0,0,0,0,1],[1,0,0,2,0,0,2,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,3,0,0,0,3,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"走廊",map:[[1,1,1,1,1,1,1,1,1,1],[1,0,0,0,1,0,0,0,0,1],[1,0,4,0,1,0,2,0,0,1],[1,0,0,0,1,0,0,0,0,1],[1,1,1,0,1,1,1,1,0,1],[1,3,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"迷宫",map:[[1,1,1,1,1,1,1,1,1,1],[1,3,0,0,1,0,0,0,3,1],[1,0,2,0,1,0,2,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,0,1,1,1,0,0,1],[1,0,0,0,1,4,0,0,0,1],[1,0,2,0,1,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,1,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"四角",map:[[1,1,1,1,1,1,1,1,1,1],[1,3,0,0,0,0,0,0,3,1],[1,0,1,1,0,0,1,1,0,1],[1,0,1,2,0,0,2,1,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,4,0,0,0,0,1],[1,0,1,2,0,0,2,1,0,1],[1,0,1,1,0,0,1,1,0,1],[1,3,0,0,0,0,0,0,3,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"挑战",map:[[1,1,1,1,1,1,1,1,1,1],[1,0,0,0,1,3,3,0,0,1],[1,0,2,0,1,0,0,0,0,1],[1,0,0,0,0,0,2,0,0,1],[1,1,1,0,1,1,1,1,0,1],[1,3,0,0,0,4,0,0,0,1],[1,1,1,1,1,0,1,1,1,1],[1,0,0,2,0,0,0,0,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"困难",map:[[1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,0,1],[1,0,1,3,0,0,3,1,0,1],[1,0,0,2,0,0,2,0,0,1],[1,0,1,0,0,4,0,1,0,1],[1,0,1,2,0,0,2,1,0,1],[1,0,1,3,0,0,3,1,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"专家",map:[[1,1,1,1,1,1,1,1,1,1],[1,3,0,0,1,0,0,0,3,1],[1,0,2,0,0,0,2,0,0,1],[1,0,0,1,1,1,0,0,0,1],[1,1,0,0,4,0,0,1,1,1],[1,0,0,1,1,1,0,0,0,1],[1,0,2,0,0,0,2,0,0,1],[1,3,0,0,1,0,0,0,3,1],[1,0,0,0,1,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]},
+            {name:"大师",map:[[1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,0,1,1,0,1],[1,0,1,3,2,2,3,1,0,1],[1,0,0,0,0,0,0,0,0,1],[1,0,0,0,4,0,0,0,0,1],[1,0,1,3,2,2,3,1,0,1],[1,0,1,1,0,0,1,1,0,1],[1,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1]]}
+        ];
+        let currentLevel=0,gameMap=[],playerPos={x:0,y:0},moves=0,pushes=0,history=[],completedLevels=new Set(),totalStats={moves:0,pushes:0};
+        function initLevel(levelIndex){currentLevel=levelIndex;gameMap=LEVELS[levelIndex].map.map(row=>[...row]);for(let y=0;y<GRID_SIZE;y++)for(let x=0;x<GRID_SIZE;x++)if(gameMap[y][x]===TILES.PLAYER||gameMap[y][x]===TILES.PLAYER_ON_TARGET)playerPos={x,y};moves=0;pushes=0;history=[];updateUI();draw();updateLevelSelector();}
+        function draw(){ctx.fillStyle='#2c3e50';ctx.fillRect(0,0,canvas.width,canvas.height);for(let y=0;y<GRID_SIZE;y++)for(let x=0;x<GRID_SIZE;x++){const tile=gameMap[y][x],px=x*TILE_SIZE,py=y*TILE_SIZE;ctx.fillStyle='#34495e';ctx.fillRect(px,py,TILE_SIZE,TILE_SIZE);ctx.strokeStyle='#2c3e50';ctx.strokeRect(px,py,TILE_SIZE,TILE_SIZE);switch(tile){case TILES.WALL:ctx.fillStyle='#7f8c8d';ctx.fillRect(px+2,py+2,TILE_SIZE-4,TILE_SIZE-4);ctx.fillStyle='#95a5a6';ctx.fillRect(px+4,py+4,TILE_SIZE-8,TILE_SIZE-8);break;case TILES.BOX:drawBox(px,py,'#e67e22');break;case TILES.TARGET:drawTarget(px,py);break;case TILES.PLAYER:drawPlayer(px,py);break;case TILES.BOX_ON_TARGET:drawBox(px,py,'#27ae60');drawTarget(px,py,true);break;case TILES.PLAYER_ON_TARGET:drawTarget(px,py);drawPlayer(px,py);break;}}}
+        function drawBox(x,y,color){ctx.fillStyle=color;ctx.fillRect(x+4,y+4,TILE_SIZE-8,TILE_SIZE-8);ctx.fillStyle='rgba(255,255,255,0.3)';ctx.fillRect(x+4,y+4,TILE_SIZE-8,4);ctx.fillRect(x+4,y+4,4,TILE_SIZE-8);ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fillRect(x+TILE_SIZE-8,y+4,4,TILE_SIZE-8);ctx.fillRect(x+4,y+TILE_SIZE-8,TILE_SIZE-8,4);ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.arc(x+TILE_SIZE/2,y+TILE_SIZE/2,4,0,Math.PI*2);ctx.fill();}
+        function drawTarget(x,y,filled=false){ctx.fillStyle=filled?'#2ecc71':'#e74c3c';ctx.beginPath();ctx.arc(x+TILE_SIZE/2,y+TILE_SIZE/2,8,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#c0392b';ctx.lineWidth=2;ctx.stroke();}
+        function drawPlayer(x,y){ctx.fillStyle='#3498db';ctx.beginPath();ctx.arc(x+TILE_SIZE/2,y+TILE_SIZE/2,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#2980b9';ctx.beginPath();ctx.arc(x+TILE_SIZE/2,y+TILE_SIZE/2,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+TILE_SIZE/2-3,y+TILE_SIZE/2-2,3,0,Math.PI*2);ctx.arc(x+TILE_SIZE/2+3,y+TILE_SIZE/2-2,3,0,Math.PI*2);ctx.fill();}
+        function movePlayer(direction,event){if(event)event.preventDefault();let dx=0,dy=0;switch(direction){case'up':dy=-1;break;case'down':dy=1;break;case'left':dx=-1;break;case'right':dx=1;break;}const newX=playerPos.x+dx,newY=playerPos.y+dy;if(newX<0||newX>=GRID_SIZE||newY<0||newY>=GRID_SIZE)return;const targetTile=gameMap[newY][newX];const state={playerPos:{...playerPos},map:gameMap.map(row=>[...row]),moves,pushes};if(targetTile===TILES.WALL)return;if(targetTile===TILES.BOX||targetTile===TILES.BOX_ON_TARGET){const boxNewX=newX+dx,boxNewY=newY+dy;if(boxNewX<0||boxNewX>=GRID_SIZE||boxNewY<0||boxNewY>=GRID_SIZE)return;const boxTargetTile=gameMap[boxNewY][boxNewX];if(boxTargetTile===TILES.WALL||boxTargetTile===TILES.BOX||boxTargetTile===TILES.BOX_ON_TARGET)return;history.push(state);gameMap[boxNewY][boxNewX]=(boxTargetTile===TILES.TARGET)?TILES.BOX_ON_TARGET:TILES.BOX;gameMap[newY][newX]=(targetTile===TILES.BOX_ON_TARGET)?TILES.PLAYER_ON_TARGET:TILES.PLAYER;gameMap[playerPos.y][playerPos.x]=(gameMap[playerPos.y][playerPos.x]===TILES.PLAYER_ON_TARGET)?TILES.TARGET:TILES.EMPTY;playerPos={x:newX,y:newY};pushes++;moves++;}else{history.push(state);gameMap[newY][newX]=(targetTile===TILES.TARGET)?TILES.PLAYER_ON_TARGET:TILES.PLAYER;gameMap[playerPos.y][playerPos.x]=(gameMap[playerPos.y][playerPos.x]===TILES.PLAYER_ON_TARGET)?TILES.TARGET:TILES.EMPTY;playerPos={x:newX,y:newY};moves++;}updateUI();draw();checkWin();}
+        function undoMove(event){if(event)event.preventDefault();if(history.length===0)return;const state=history.pop();playerPos=state.playerPos;gameMap=state.map;moves=state.moves;pushes=state.pushes;updateUI();draw();}
+        function checkWin(){let boxesOnTarget=0,totalBoxes=0;for(let y=0;y<GRID_SIZE;y++)for(let x=0;x<GRID_SIZE;x++){if(gameMap[y][x]===TILES.BOX)totalBoxes++;if(gameMap[y][x]===TILES.BOX_ON_TARGET){totalBoxes++;boxesOnTarget++;}}if(boxesOnTarget===totalBoxes&&totalBoxes>0){completedLevels.add(currentLevel);totalStats.moves+=moves;totalStats.pushes+=pushes;if(currentLevel===LEVELS.length-1){document.getElementById('totalMoves').textContent=totalStats.moves;document.getElementById('totalPushes').textContent=totalStats.pushes;document.getElementById('gameCompleteOverlay').classList.add('active');}else{document.getElementById('completedLevel').textContent=currentLevel+1;document.getElementById('levelMoves').textContent=moves;document.getElementById('levelPushes').textContent=pushes;document.getElementById('levelCompleteOverlay').classList.add('active');}}}
+        function updateUI(){document.getElementById('level').textContent=currentLevel+1;document.getElementById('moves').textContent=moves;document.getElementById('pushes').textContent=pushes;}
+        function updateLevelSelector(){const container=document.getElementById('levelSelector');container.innerHTML='';for(let i=0;i<LEVELS.length;i++){const btn=document.createElement('button');btn.className='level-btn';btn.textContent=i+1;if(i===currentLevel)btn.classList.add('active');if(completedLevels.has(i))btn.classList.add('completed');btn.onclick=()=>initLevel(i);container.appendChild(btn);}}
+        function restartLevel(){initLevel(currentLevel);}
+        function prevLevel(){if(currentLevel>0)initLevel(currentLevel-1);}
+        function nextLevel(){closeOverlay();if(currentLevel<LEVELS.length-1)initLevel(currentLevel+1);}
+        function closeOverlay(){document.getElementById('levelCompleteOverlay').classList.remove('active');document.getElementById('gameCompleteOverlay').classList.remove('active');}
+        function resetGame(){completedLevels.clear();totalStats={moves:0,pushes:0};closeOverlay();initLevel(0);}
+        document.addEventListener('keydown',(e)=>{if(e.key==='ArrowUp'||e.key==='w'||e.key==='W'){e.preventDefault();movePlayer('up');}else if(e.key==='ArrowDown'||e.key==='s'||e.key==='S'){e.preventDefault();movePlayer('down');}else if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){e.preventDefault();movePlayer('left');}else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){e.preventDefault();movePlayer('right');}else if(e.key==='u'||e.key==='U'){e.preventDefault();undoMove();}else if(e.key==='r'||e.key==='R'){e.preventDefault();restartLevel();}});
+        initLevel(0);
+    </script>
+</body>
+</html>
