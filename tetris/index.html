@@ -9,6 +9,13 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -17,25 +24,23 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             color: #fff;
             padding: 10px;
+            padding-top: 20px;
         }
 
         .game-wrapper {
             touch-action: pan-y;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         #gameCanvas, .d-btn {
             touch-action: none;
-        }
-
-        .game-wrapper {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            justify-content: center;
         }
 
         .game-container {
@@ -43,8 +48,8 @@
         }
 
         h1 {
-            font-size: 1.8em;
-            margin-bottom: 8px;
+            font-size: 1.5em;
+            margin-bottom: 5px;
             background: linear-gradient(45deg, #9b59b6, #3498db);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -69,27 +74,27 @@
         .side-panel {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
         }
 
         .panel-box {
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 15px;
+            padding: 10px;
+            border-radius: 10px;
             backdrop-filter: blur(10px);
-            min-width: 120px;
+            min-width: 100px;
         }
 
         .panel-title {
             color: #888;
-            font-size: 0.85em;
-            margin-bottom: 8px;
+            font-size: 0.75em;
+            margin-bottom: 5px;
         }
 
         .panel-value {
             color: #9b59b6;
             font-weight: bold;
-            font-size: 1.5em;
+            font-size: 1.3em;
         }
 
         #nextCanvas {
@@ -100,18 +105,18 @@
         }
 
         .controls {
-            margin-top: 15px;
+            margin-top: 10px;
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 10px 20px;
-            font-size: 0.95em;
+            padding: 8px 16px;
+            font-size: 0.85em;
             border: none;
-            border-radius: 25px;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
@@ -144,54 +149,57 @@
         .speed-control {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 20px;
+            padding: 6px 10px;
+            border-radius: 15px;
         }
 
         .speed-control label {
-            font-size: 0.85em;
+            font-size: 0.8em;
             color: #aaa;
         }
 
         .speed-control input[type="range"] {
-            width: 80px;
+            width: 70px;
         }
 
         .speed-value {
             color: #9b59b6;
             font-weight: bold;
-            min-width: 35px;
-            font-size: 0.9em;
+            min-width: 30px;
+            font-size: 0.85em;
         }
 
         .mobile-controls {
             display: none;
-            margin-top: 15px;
+            margin-top: 10px;
         }
 
         .d-pad {
             display: grid;
-            grid-template-columns: repeat(3, 70px);
-            grid-template-rows: repeat(3, 70px);
-            gap: 8px;
+            grid-template-columns: repeat(3, 55px);
+            grid-template-rows: repeat(3, 55px);
+            gap: 6px;
             justify-content: center;
         }
 
         .d-btn {
-            width: 70px;
-            height: 70px;
+            width: 55px;
+            height: 55px;
             border: none;
-            border-radius: 15px;
+            border-radius: 12px;
             background: rgba(155, 89, 182, 0.3);
             color: #fff;
-            font-size: 1.8em;
+            font-size: 1.5em;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.15s;
             user-select: none;
             -webkit-user-select: none;
             touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .d-btn:hover, .d-btn:active {
@@ -203,33 +211,33 @@
         .d-btn.left { grid-column: 1; grid-row: 2; }
         .d-btn.right { grid-column: 3; grid-row: 2; }
         .d-btn.down { grid-column: 2; grid-row: 3; }
-        .d-btn.rotate { grid-column: 2; grid-row: 2; background: rgba(52, 152, 219, 0.4); font-size: 1.3em; }
-        .d-btn.drop { grid-column: 1; grid-row: 3; background: rgba(231, 76, 60, 0.4); font-size: 1.2em; }
+        .d-btn.rotate { grid-column: 2; grid-row: 2; background: rgba(52, 152, 219, 0.4); font-size: 1.2em; }
+        .d-btn.drop { grid-column: 1; grid-row: 3; background: rgba(231, 76, 60, 0.4); font-size: 1em; }
 
         .instructions {
-            margin-top: 10px;
-            padding: 10px;
+            margin-top: 8px;
+            padding: 8px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            font-size: 0.8em;
+            border-radius: 8px;
+            font-size: 0.75em;
             color: #aaa;
-            max-width: 300px;
+            max-width: 280px;
         }
 
         .instructions h3 {
             color: #9b59b6;
-            margin-bottom: 8px;
-            font-size: 0.95em;
+            margin-bottom: 5px;
+            font-size: 0.9em;
         }
 
         .key {
             display: inline-block;
-            padding: 2px 5px;
+            padding: 2px 4px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
+            border-radius: 3px;
             margin: 0 1px;
             font-family: monospace;
-            font-size: 0.85em;
+            font-size: 0.8em;
         }
 
         .overlay {
@@ -251,47 +259,55 @@
         }
 
         .overlay h2 {
-            font-size: 2.5em;
-            margin-bottom: 15px;
+            font-size: 2em;
+            margin-bottom: 10px;
             color: #ff4444;
             text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
         }
 
         .overlay .final-score {
-            font-size: 1.3em;
-            margin-bottom: 25px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
             color: #9b59b6;
         }
 
         @media (max-width: 768px) {
+            body {
+                padding-top: 10px;
+            }
             .game-wrapper {
                 flex-direction: column;
                 align-items: center;
+                gap: 10px;
             }
-            h1 { font-size: 1.5em; }
+            h1 { font-size: 1.3em; }
             .side-panel {
                 flex-direction: row;
                 flex-wrap: wrap;
                 justify-content: center;
+                gap: 8px;
             }
             .panel-box {
-                min-width: 80px;
-                padding: 10px;
+                min-width: 70px;
+                padding: 8px;
+            }
+            .panel-value {
+                font-size: 1.1em;
             }
             .mobile-controls { display: block; }
             .instructions { display: none; }
-            #gameCanvas { max-width: 100%; }
+            #gameCanvas { max-width: 260px; }
         }
 
         @media (max-width: 480px) {
             .d-pad {
-                grid-template-columns: repeat(3, 60px);
-                grid-template-rows: repeat(3, 60px);
+                grid-template-columns: repeat(3, 50px);
+                grid-template-rows: repeat(3, 50px);
             }
             .d-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5em;
+                width: 50px;
+                height: 50px;
+                font-size: 1.3em;
             }
         }
     </style>
@@ -301,7 +317,7 @@
         <div class="game-container">
             <h1>🎮 俄罗斯方块</h1>
             <div class="canvas-wrapper">
-                <canvas id="gameCanvas" width="300" height="600"></canvas>
+                <canvas id="gameCanvas" width="250" height="500"></canvas>
             </div>
             
             <div class="controls">
@@ -316,12 +332,12 @@
 
             <div class="mobile-controls">
                 <div class="d-pad">
-                    <button class="d-btn up" ontouchstart="handleControl('rotate')" onmousedown="handleControl('rotate')">↻</button>
-                    <button class="d-btn left" ontouchstart="handleControl('left')" onmousedown="handleControl('left')">◀</button>
-                    <button class="d-btn rotate" ontouchstart="handleControl('rotate')" onmousedown="handleControl('rotate')">↻</button>
-                    <button class="d-btn right" ontouchstart="handleControl('right')" onmousedown="handleControl('right')">▶</button>
-                    <button class="d-btn drop" ontouchstart="handleControl('drop')" onmousedown="handleControl('drop')">⤓</button>
-                    <button class="d-btn down" ontouchstart="handleControl('down')" onmousedown="handleControl('down')">▼</button>
+                    <button class="d-btn up" ontouchstart="handleControl('rotate', event)" ontouchend="stopRepeat()" onmousedown="handleControl('rotate', event)" onmouseup="stopRepeat()" onmouseleave="stopRepeat()">↻</button>
+                    <button class="d-btn left" ontouchstart="startRepeat('left', event)" ontouchend="stopRepeat()" onmousedown="startRepeat('left', event)" onmouseup="stopRepeat()" onmouseleave="stopRepeat()">◀</button>
+                    <button class="d-btn rotate" ontouchstart="handleControl('rotate', event)" ontouchend="stopRepeat()" onmousedown="handleControl('rotate', event)" onmouseup="stopRepeat()" onmouseleave="stopRepeat()">↻</button>
+                    <button class="d-btn right" ontouchstart="startRepeat('right', event)" ontouchend="stopRepeat()" onmousedown="startRepeat('right', event)" onmouseup="stopRepeat()" onmouseleave="stopRepeat()">▶</button>
+                    <button class="d-btn drop" ontouchstart="handleControl('drop', event)" onmousedown="handleControl('drop', event)">⤓</button>
+                    <button class="d-btn down" ontouchstart="startRepeat('down', event)" ontouchend="stopRepeat()" onmousedown="startRepeat('down', event)" onmouseup="stopRepeat()" onmouseleave="stopRepeat()">▼</button>
                 </div>
             </div>
 
@@ -347,7 +363,7 @@
             </div>
             <div class="panel-box">
                 <div class="panel-title">下一个</div>
-                <canvas id="nextCanvas" width="100" height="100"></canvas>
+                <canvas id="nextCanvas" width="80" height="80"></canvas>
             </div>
         </div>
     </div>
@@ -365,16 +381,16 @@
         const nextCanvas = document.getElementById('nextCanvas');
         const nextCtx = nextCanvas.getContext('2d');
 
-        // 游戏配置
+        // 游戏配置 - 缩小画布
         const COLS = 10;
         const ROWS = 20;
-        const BLOCK_SIZE = 30;
+        const BLOCK_SIZE = 25;
         const GAME_WIDTH = COLS * BLOCK_SIZE;
         const GAME_HEIGHT = ROWS * BLOCK_SIZE;
 
         // 响应式画布尺寸
         function resizeCanvas() {
-            const maxWidth = Math.min(window.innerWidth - 40, 300);
+            const maxWidth = Math.min(window.innerWidth - 30, 250);
             const scale = maxWidth / GAME_WIDTH;
             canvas.style.width = maxWidth + 'px';
             canvas.style.height = (GAME_HEIGHT * scale) + 'px';
@@ -446,10 +462,11 @@
             return createPiece(Math.floor(Math.random() * SHAPES.length));
         }
 
-        // 旋转方块
+        // 旋转方块 - 修复为顺时针旋转
         function rotate(piece) {
+            // 顺时针旋转：转置后反转每一行
             const rotated = piece.shape[0].map((_, i) =>
-                piece.shape.map(row => row[i]).reverse()
+                piece.shape.map(row => row[row.length - 1 - i])
             );
             return { ...piece, shape: rotated };
         }
@@ -584,7 +601,7 @@
             
             if (!nextPiece) return;
             
-            const blockSize = 20;
+            const blockSize = 16;
             const offsetX = (nextCanvas.width - nextPiece.shape[0].length * blockSize) / 2;
             const offsetY = (nextCanvas.height - nextPiece.shape.length * blockSize) / 2;
             
@@ -678,8 +695,30 @@
             document.getElementById('startBtn').style.display = 'inline-block';
         }
 
+        // 重复操作
+        let repeatInterval = null;
+        
+        function startRepeat(action, event) {
+            if (event) event.preventDefault();
+            if (repeatInterval) return;
+            
+            handleControl(action, event);
+            repeatInterval = setInterval(() => {
+                handleControl(action, null);
+            }, 80);
+        }
+        
+        function stopRepeat() {
+            if (repeatInterval) {
+                clearInterval(repeatInterval);
+                repeatInterval = null;
+            }
+        }
+
         // 虚拟按键控制
-        function handleControl(action) {
+        function handleControl(action, event) {
+            if (event) event.preventDefault();
+            
             if (!gameRunning || gamePaused) {
                 if (!gameRunning && action === 'rotate') startGame();
                 return;
@@ -695,8 +734,22 @@
                     if (collide(board, currentPiece)) currentPiece.x--;
                     break;
                 case 'down':
-                    dropPiece();
+                    // 加速下落 - 直接下落一格
+                    currentPiece.y++;
+                    if (collide(board, currentPiece)) {
+                        currentPiece.y--;
+                        merge(board, currentPiece);
+                        clearLines();
+                        currentPiece = nextPiece;
+                        nextPiece = randomPiece();
+                        drawNext();
+                        if (collide(board, currentPiece)) {
+                            gameOver();
+                            return;
+                        }
+                    }
                     score += 1;
+                    dropCounter = 0; // 重置自动下落计时器
                     updateUI();
                     break;
                 case 'rotate':
@@ -704,12 +757,21 @@
                     if (!collide(board, rotated)) currentPiece = rotated;
                     break;
                 case 'drop':
+                    // 直接落到底
                     while (!collide(board, currentPiece)) {
                         currentPiece.y++;
                         score += 2;
                     }
                     currentPiece.y--;
-                    dropPiece();
+                    merge(board, currentPiece);
+                    clearLines();
+                    currentPiece = nextPiece;
+                    nextPiece = randomPiece();
+                    drawNext();
+                    if (collide(board, currentPiece)) {
+                        gameOver();
+                        return;
+                    }
                     updateUI();
                     break;
             }
@@ -751,8 +813,22 @@
                 case 's':
                 case 'S':
                     e.preventDefault();
-                    dropPiece();
+                    // 加速下落
+                    currentPiece.y++;
+                    if (collide(board, currentPiece)) {
+                        currentPiece.y--;
+                        merge(board, currentPiece);
+                        clearLines();
+                        currentPiece = nextPiece;
+                        nextPiece = randomPiece();
+                        drawNext();
+                        if (collide(board, currentPiece)) {
+                            gameOver();
+                            return;
+                        }
+                    }
                     score += 1;
+                    dropCounter = 0;
                     updateUI();
                     break;
                 case 'ArrowUp':
@@ -764,12 +840,21 @@
                     break;
                 case ' ':
                     e.preventDefault();
+                    // 直接落到底
                     while (!collide(board, currentPiece)) {
                         currentPiece.y++;
                         score += 2;
                     }
                     currentPiece.y--;
-                    dropPiece();
+                    merge(board, currentPiece);
+                    clearLines();
+                    currentPiece = nextPiece;
+                    nextPiece = randomPiece();
+                    drawNext();
+                    if (collide(board, currentPiece)) {
+                        gameOver();
+                        return;
+                    }
                     updateUI();
                     break;
                 case 'p':
