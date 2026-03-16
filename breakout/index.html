@@ -9,7 +9,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            touch-action: none;
         }
 
         body {
@@ -21,7 +20,14 @@
             align-items: center;
             color: #fff;
             padding: 10px;
-            overflow: hidden;
+        }
+
+        .game-container {
+            touch-action: pan-y;
+        }
+
+        #gameCanvas, .d-btn {
+            touch-action: none;
         }
 
         .game-container {
@@ -293,9 +299,9 @@
 
         <div class="mobile-controls">
             <div class="d-pad">
-                <button class="d-btn left" ontouchstart="movePaddle('left')" onmousedown="movePaddle('left')">◀</button>
+                <button class="d-btn left" ontouchstart="startMoving('left')" ontouchend="stopMoving()" onmousedown="startMoving('left')" onmouseup="stopMoving()" onmouseleave="stopMoving()">◀</button>
                 <button class="d-btn center" ontouchstart="launchBall()" onmousedown="launchBall()">🚀</button>
-                <button class="d-btn right" ontouchstart="movePaddle('right')" onmousedown="movePaddle('right')">▶</button>
+                <button class="d-btn right" ontouchstart="startMoving('right')" ontouchend="stopMoving()" onmousedown="startMoving('right')" onmouseup="stopMoving()" onmouseleave="stopMoving()">▶</button>
             </div>
         </div>
 
@@ -655,9 +661,24 @@
         }
 
         // 移动挡板（虚拟按键）
+        let moveInterval = null;
+        
+        function startMoving(direction) {
+            if (moveInterval) return;
+            movePaddle(direction);
+            moveInterval = setInterval(() => movePaddle(direction), 30);
+        }
+        
+        function stopMoving() {
+            if (moveInterval) {
+                clearInterval(moveInterval);
+                moveInterval = null;
+            }
+        }
+        
         function movePaddle(direction) {
             if (!gameRunning) return;
-            const moveDistance = paddle.speed * 2;
+            const moveDistance = paddle.speed * 1.5;
             if (direction === 'left') {
                 paddle.x = Math.max(0, paddle.x - moveDistance);
             } else if (direction === 'right') {

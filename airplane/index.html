@@ -9,7 +9,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            touch-action: none;
         }
 
         body {
@@ -21,7 +20,14 @@
             align-items: center;
             color: #fff;
             padding: 10px;
-            overflow: hidden;
+        }
+
+        .game-container {
+            touch-action: pan-y;
+        }
+
+        #gameCanvas, .d-btn {
+            touch-action: none;
         }
 
         .game-container {
@@ -298,11 +304,11 @@
 
         <div class="mobile-controls">
             <div class="d-pad">
-                <button class="d-btn up" ontouchstart="movePlayer('up')" onmousedown="movePlayer('up')">▲</button>
-                <button class="d-btn left" ontouchstart="movePlayer('left')" onmousedown="movePlayer('left')">◀</button>
+                <button class="d-btn up" ontouchstart="startMoving('up')" ontouchend="stopMoving()" onmousedown="startMoving('up')" onmouseup="stopMoving()" onmouseleave="stopMoving()">▲</button>
+                <button class="d-btn left" ontouchstart="startMoving('left')" ontouchend="stopMoving()" onmousedown="startMoving('left')" onmouseup="stopMoving()" onmouseleave="stopMoving()">◀</button>
                 <button class="d-btn center" ontouchstart="playerShoot()" onmousedown="playerShoot()">🔥</button>
-                <button class="d-btn right" ontouchstart="movePlayer('right')" onmousedown="movePlayer('right')">▶</button>
-                <button class="d-btn down" ontouchstart="movePlayer('down')" onmousedown="movePlayer('down')">▼</button>
+                <button class="d-btn right" ontouchstart="startMoving('right')" ontouchend="stopMoving()" onmousedown="startMoving('right')" onmouseup="stopMoving()" onmouseleave="stopMoving()">▶</button>
+                <button class="d-btn down" ontouchstart="startMoving('down')" ontouchend="stopMoving()" onmousedown="startMoving('down')" onmouseup="stopMoving()" onmouseleave="stopMoving()">▼</button>
             </div>
         </div>
 
@@ -692,9 +698,24 @@
         }
 
         // 移动玩家（虚拟按键）
+        let moveInterval = null;
+        
+        function startMoving(direction) {
+            if (moveInterval) return;
+            movePlayer(direction);
+            moveInterval = setInterval(() => movePlayer(direction), 50);
+        }
+        
+        function stopMoving() {
+            if (moveInterval) {
+                clearInterval(moveInterval);
+                moveInterval = null;
+            }
+        }
+        
         function movePlayer(direction) {
             if (!gameRunning) return;
-            const moveDistance = player.speed * 3;
+            const moveDistance = player.speed * 2;
             switch(direction) {
                 case 'up':
                     player.y = Math.max(player.height / 2, player.y - moveDistance);

@@ -9,7 +9,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            touch-action: none;
         }
 
         body {
@@ -21,7 +20,14 @@
             align-items: center;
             color: #fff;
             padding: 10px;
-            overflow: hidden;
+        }
+
+        .game-wrapper {
+            touch-action: pan-y;
+        }
+
+        #gameCanvas, .d-btn {
+            touch-action: none;
         }
 
         .game-wrapper {

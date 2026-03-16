@@ -9,7 +9,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            touch-action: none;
         }
 
         body {
@@ -21,7 +20,14 @@
             align-items: center;
             color: #fff;
             padding: 10px;
-            overflow: hidden;
+        }
+
+        .game-container {
+            touch-action: pan-y;
+        }
+
+        #gameCanvas, .d-btn {
+            touch-action: none;
         }
 
         .game-container {
@@ -309,10 +315,10 @@
 
         <div class="mobile-controls">
             <div class="d-pad">
-                <button class="d-btn up" ontouchstart="setDirection('up')" onmousedown="setDirection('up')">▲</button>
-                <button class="d-btn left" ontouchstart="setDirection('left')" onmousedown="setDirection('left')">◀</button>
-                <button class="d-btn right" ontouchstart="setDirection('right')" onmousedown="setDirection('right')">▶</button>
-                <button class="d-btn down" ontouchstart="setDirection('down')" onmousedown="setDirection('down')">▼</button>
+                <button class="d-btn up" ontouchstart="handleDirection('up')" onmousedown="handleDirection('up')">▲</button>
+                <button class="d-btn left" ontouchstart="handleDirection('left')" onmousedown="handleDirection('left')">◀</button>
+                <button class="d-btn right" ontouchstart="handleDirection('right')" onmousedown="handleDirection('right')">▶</button>
+                <button class="d-btn down" ontouchstart="handleDirection('down')" onmousedown="handleDirection('down')">▼</button>
             </div>
         </div>
 
@@ -652,6 +658,15 @@
             if (opposites[newDirection] !== direction) {
                 nextDirection = newDirection;
             }
+        }
+
+        // 处理方向按钮点击（防止重复触发）
+        let lastDirectionTime = 0;
+        function handleDirection(newDirection) {
+            const now = Date.now();
+            if (now - lastDirectionTime < 100) return; // 100ms内不重复触发
+            lastDirectionTime = now;
+            setDirection(newDirection);
         }
 
         // 速度控制
